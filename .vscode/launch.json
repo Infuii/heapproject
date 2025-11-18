@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ParticleSimulator",
+      "request": "launch",
+      "mainClass": "ParticleSimulator",
+      "args": "particles_a_start.txt"
+    }
+  ]
+}
