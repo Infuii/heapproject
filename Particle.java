@@ -91,14 +91,19 @@ public class Particle {
 		other._lastUpdateTime = now;
 	}
 	
+	/**
+	 * Updates this particle's velocity after a collision with a wall.
+	 * @param now the current time in the simulation
+	 * @param isVerticalWall true if the particle collided with a vertical wall, false if horizontal wall
+	 */
 	public void updateAfterWallCollision (double now, boolean isVerticalWall) {
 		if (isVerticalWall) {
-			_vx = -_vx;
+			_vx = -_vx; // Reverse x-velocity for vertical wall collision
 		}
 		else {
-			_vy = -_vy;
+			_vy = -_vy; // Reverse y-velocity for horizontal wall collision
 		}
-		_lastUpdateTime = now;
+		_lastUpdateTime = now; // Update the last update time to now, keeping track of when the particle was last changed
 	}
 
 	/**

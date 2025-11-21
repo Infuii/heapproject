@@ -70,36 +70,36 @@ public class ParticleSimulator extends JPanel {
 	private void createEventsForParticle(Particle p, double currentTime) {
 		// Create wall collision events
 		if (p._vx < 0) {
-			double time = (p._radius - p._x) / p._vx;
-			if (time > 0 && currentTime + time < _duration) {
-				_events.add(new Event(currentTime + time, currentTime, p, null, "LEFT"));
+			double time = (p._radius - p._x) / p._vx; // Time until collision with left wall
+			if (time > 0 && currentTime + time < _duration) { // Check for valid collision time
+				_events.add(new Event(currentTime + time, currentTime, p, null, "LEFT")); // Add left wall collision event
 			}
 		}
 		if (p._vx > 0) {
-			double time = (_width - p._radius - p._x) / p._vx;
+			double time = (_width - p._radius - p._x) / p._vx; // Time until collision with right wall 
 			if (time > 0 && currentTime + time < _duration) {
-				_events.add(new Event(currentTime + time, currentTime, p, null, "RIGHT"));
+				_events.add(new Event(currentTime + time, currentTime, p, null, "RIGHT")); // Add right wall collision event
 			}
 		}
 		if (p._vy < 0) {
-			double time = (p._radius - p._y) / p._vy;
+			double time = (p._radius - p._y) / p._vy; // Time until collision with top wall
 			if (time > 0 && currentTime + time < _duration) {
-				_events.add(new Event(currentTime + time, currentTime, p, null, "TOP"));
+				_events.add(new Event(currentTime + time, currentTime, p, null, "TOP")); // Add top wall collision event
 			}
 		}
 		if (p._vy > 0) {
-			double time = (_width - p._radius - p._y) / p._vy;
+			double time = (_width - p._radius - p._y) / p._vy; // Time until collision with bottom wall
 			if (time > 0 && currentTime + time < _duration) {
-				_events.add(new Event(currentTime + time, currentTime, p, null, "BOTTOM"));
+				_events.add(new Event(currentTime + time, currentTime, p, null, "BOTTOM")); // Add bottom wall collision event
 			}
 		}
 		
 		// Create particle-particle collision events
 		for (Particle q : _particles) {
 			if (p != q) {
-				double time = p.getCollisionTime(q);
-				if (time > 0 && time != Double.POSITIVE_INFINITY) {
-					double eventTime = currentTime + time;
+				double time = p.getCollisionTime(q); // Get time until collision with particle q
+				if (time > 0 && time != Double.POSITIVE_INFINITY) { // Is Valid collision time ? 
+					double eventTime = currentTime + time; //then calculate event time
 					if (eventTime < _duration) {
 						_events.add(new Event(eventTime, currentTime, p, q, null));
 					}
@@ -153,7 +153,7 @@ public class ParticleSimulator extends JPanel {
 			if (event._wall != null) {
 				Particle p = event._particle1;
 		
-				// Wall collision - reverse appropriate velocity based on wall type
+				// Wall collision -- reverse appropriate velocity based on wall type
 				if (event._wall.equals("LEFT") || event._wall.equals("RIGHT")) p._vx = -p._vx;
 				else p._vy = -p._vy;
 				
