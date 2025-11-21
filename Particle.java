@@ -3,10 +3,10 @@ import java.util.*;
 
 public class Particle {
 	private String _name;
-	private double _x, _y;
-	private double _vx, _vy;
-	private double _radius;
-	private double _lastUpdateTime;
+	public double _x, _y;
+	public double _vx, _vy;
+	public double _radius;
+	public double _lastUpdateTime;
 
 	/**
 	 * Helper method to parse a string into a Particle.
@@ -89,6 +89,16 @@ public class Particle {
 
 		_lastUpdateTime = now;
 		other._lastUpdateTime = now;
+	}
+	
+	public void updateAfterWallCollision (double now, boolean isVerticalWall) {
+		if (isVerticalWall) {
+			_vx = -_vx;
+		}
+		else {
+			_vy = -_vy;
+		}
+		_lastUpdateTime = now;
 	}
 
 	/**

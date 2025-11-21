@@ -53,6 +53,7 @@ public class ParticleSimulator extends JPanel {
 
 	/**
 	 * Helper method to update the positions of all the particles based on their current velocities.
+	 * @param delta the amount of time to update each particle's position
 	 */
 	private void updateAllParticles (double delta) {
 		for (Particle p : _particles) {
@@ -61,50 +62,65 @@ public class ParticleSimulator extends JPanel {
 	}
 
 	/**
-	 * Executes the actual simulation.
+	 * Helper method to create all future collision events for a given particle.
+	 * This includes both wall collisions and particle-particle collisions.
+	 * @param p the particle for which to create future events
+	 * @param currentTime the current time of the simulation
 	 */
+	private void createEventsForParticle(Particle p, double currentTime) {
+		// Create wall collision events
+		if (p._vx < 0) {
+			double time = (p._radius - p._x) / p._vx;
+			if (time > 0 && currentTime + time < _duration) {
+				_events.add(new Event(currentTime + time, currentTime, p, null, "LEFT"));
+			}
+		}
+		if (p._vx > 0) {
+			double time = (_width - p._radius - p._x) / p._vx;
+			if (time > 0 && currentTime + time < _duration) {
+				_events.add(new Event(currentTime + time, currentTime, p, null, "RIGHT"));
+			}
+		}
+		if (p._vy < 0) {
+			double time = (p._radius - p._y) / p._vy;
+			if (time > 0 && currentTime + time < _duration) {
+				_events.add(new Event(currentTime + time, currentTime, p, null, "TOP"));
+			}
+		}
+		if (p._vy > 0) {
+			double time = (_width - p._radius - p._y) / p._vy;
+			if (time > 0 && currentTime + time < _duration) {
+				_events.add(new Event(currentTime + time, currentTime, p, null, "BOTTOM"));
+			}
+		}
+		
+		// Create particle-particle collision events
+		for (Particle q : _particles) {
+			if (p != q) {
+				double time = p.getCollisionTime(q);
+				if (time > 0 && time != Double.POSITIVE_INFINITY) {
+					double eventTime = currentTime + time;
+					if (eventTime < _duration) {
+						_events.add(new Event(eventTime, currentTime, p, q, null));
+					}
+				}
+			}
+		}
+	}
+
+	// Executes the actual simulation.
 	private void simulate (boolean show) {
 		double lastTime = 0;
 
 		// Create initial events, i.e., all the possible
 		// collisions between all the particles and each other,
 		// and all the particles and the walls.
-		for (Particle p : _particles) {
-			// Particle-wall collisions
+		for (int i = 0; i < _particles.size(); i++) {
+			Particle p = _particles.get(i);
 			
-			
-
-			//particle-particle collisions
-			/*
-			 * Throughout the simulation, particles move per their velocities 
-			 * and collide with other particles or walls. At the start 
-			 * (simulate in ParticleSimulator.java), iterate over all particles
-			 *  and enqueue every potential collision (particle–particle and
-			 *  particle–wall). For a three-particle start state (p1, p2, p3), 
-			 * the event queue would contain entries like these collisions with 
-			 * their times. (This list shows queue contents, not the heap’s internal 
-			 * tree structure.)
-			 */
-
-			for(Particle q : _particles) {
-				if(p != q) {
-					double collisionTime = p.getCollisionTime(q);
-					if(collisionTime > 0 && collisionTime < _duration) {
-						_events.add(new Event(collisionTime, 0, p, q));
-					}
-				}
-			}
-			
+			// Create all collision events for this particle
+			createEventsForParticle(p, lastTime);
 		}
-		
-		// Add  redraw events so particles move smoothly on screen
-		if (show) {
-			double redrawInterval = 0.1; // Redraw every 0.1 seconds
-			for (double t = redrawInterval; t < _duration; t += redrawInterval) {
-				_events.add(new Event(t, 0));
-			}
-		}
-		
 		
 		_events.add(new TerminationEvent(_duration));
 		while (_events.size() > 0) {
@@ -116,14 +132,20 @@ public class ParticleSimulator extends JPanel {
 				break;
 			}
 
-			// Check if event still valid; if not, then skip this event
-			// if (event not valid) {
-			//   continue;
-			// }
+			// Check if the event is still valid
+			if (event._particle1 != null && event._timeEventCreated < event._particle1._lastUpdateTime) {
+				continue; 
+			}
+			if (event._particle2 != null && event._timeEventCreated < event._particle2._lastUpdateTime) {
+				continue;
+			}
+			
+			if (event._timeOfEvent > _duration) {
+				updateAllParticles(_duration - lastTime);
+				break;
+			}
 
-
-			// Since the event is valid, then pause the simulation for the right
-			// amount of time, and then update the screen.
+			// Since the event is valid, then pause the simulation for the right amount of time, and then update the screen.
 			if (show) {
 				try {
 					Thread.sleep((long) (delta * 1000));
@@ -134,56 +156,44 @@ public class ParticleSimulator extends JPanel {
 			updateAllParticles(delta);
 
 			// Update the velocity of the particle(s) involved in the collision
-			// (either for a particle-wall collision or a particle-particle collision).
-			if (event._particle1 != null && event._particle2 != null) {
+			if (event._wall != null) {
+				Particle p = event._particle1;
+		
+				// Wall collision - reverse appropriate velocity based on wall type
+				if (event._wall.equals("LEFT") || event._wall.equals("RIGHT")) p._vx = -p._vx;
+				else p._vy = -p._vy;
+				
+				p._lastUpdateTime = event._timeOfEvent;
+				createEventsForParticle(p, event._timeOfEvent); // Create new collision events for this particle
+			}
+			else if (event._particle2 != null) {
 				// Particle-particle collision
 				event._particle1.updateAfterCollision(event._timeOfEvent, event._particle2);
 				
-				// Enqueue new events for the particles that were involved in this collision
-				for (Particle p : _particles) {
-					if (p == event._particle1 || p == event._particle2) {
-						// Create new collision events for the particles that just collided
-						for (Particle q : _particles) {
-							if (p != q) {
-								double collisionTime = p.getCollisionTime(q);
-								if (collisionTime > 0) {
-									double eventTime = event._timeOfEvent + collisionTime;
-									if (eventTime < _duration) {
-										_events.add(new Event(eventTime, event._timeOfEvent, p, q));
-									}
-								}
-							}
-						}
-					}
-				}
-				
+				// Create new events for BOTH particles that just collided
+				createEventsForParticle(event._particle1, event._timeOfEvent);
+				createEventsForParticle(event._particle2, event._timeOfEvent);
 			}
 
-			// Update the time of our simulation
-			lastTime = event._timeOfEvent;
+			lastTime = event._timeOfEvent; // Update the time of our simulation
 
-			// Redraw the screen
 			if (show) {
 				repaint();
 			}
 		}
 
-		// Print out the final state of the simulation
 		System.out.println(_width);
 		System.out.println(_duration);
 		for (Particle p : _particles) {
 			System.out.println(p);
 		}
 	}
-
 	public static void main (String[] args) throws IOException {
 		if (args.length < 1) {
 			System.out.println("Usage: java ParticalSimulator <filename>");
 			System.exit(1);
 		}
-
 		ParticleSimulator simulator;
-
 		simulator = new ParticleSimulator(args[0]);
 		JFrame frame = new JFrame();
 		frame.setTitle("Particle Simulator");

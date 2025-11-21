@@ -6,6 +6,7 @@ public class Event implements Comparable<Event> {
 	double _timeEventCreated;
 	Particle _particle1;
 	Particle _particle2;
+	String _wall; // "LEFT", "RIGHT", "TOP", "BOTTOM"
 
 	/**
 	 * @param timeOfEvent the time when the collision will take place
@@ -16,6 +17,7 @@ public class Event implements Comparable<Event> {
 		_timeEventCreated = timeEventCreated;
 		_particle1 = null;
 		_particle2 = null;
+		_wall = null;
 	}
 
 	/**
@@ -25,11 +27,12 @@ public class Event implements Comparable<Event> {
 	 * @param p1 first particle involved in collision
 	 * @param p2 second particle involved in collision
 	 */
-	public Event (double timeOfEvent, double timeEventCreated, Particle p1, Particle p2) {
+	public Event (double timeOfEvent, double timeEventCreated, Particle p1, Particle p2, String wall) {
 		_timeOfEvent = timeOfEvent;
 		_timeEventCreated = timeEventCreated;
 		_particle1 = p1;
 		_particle2 = p2;
+		_wall = wall;
 	}
 
 	@Override
