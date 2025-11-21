@@ -112,14 +112,12 @@ public class ParticleSimulator extends JPanel {
 	private void simulate (boolean show) {
 		double lastTime = 0;
 
-		// Create initial events, i.e., all the possible
-		// collisions between all the particles and each other,
-		// and all the particles and the walls.
+		// Create initial events, i.e., all the possible collisions between all
+		// the particles and each other, and all the particles and the walls.
+		
 		for (int i = 0; i < _particles.size(); i++) {
 			Particle p = _particles.get(i);
-			
-			// Create all collision events for this particle
-			createEventsForParticle(p, lastTime);
+			createEventsForParticle(p, lastTime); // Create all collision events for this particle
 		}
 		
 		_events.add(new TerminationEvent(_duration));
@@ -133,12 +131,8 @@ public class ParticleSimulator extends JPanel {
 			}
 
 			// Check if the event is still valid
-			if (event._particle1 != null && event._timeEventCreated < event._particle1._lastUpdateTime) {
-				continue; 
-			}
-			if (event._particle2 != null && event._timeEventCreated < event._particle2._lastUpdateTime) {
-				continue;
-			}
+			if (event._particle1 != null && event._timeEventCreated < event._particle1._lastUpdateTime) continue;
+			if (event._particle2 != null && event._timeEventCreated < event._particle2._lastUpdateTime) continue;
 			
 			if (event._timeOfEvent > _duration) {
 				updateAllParticles(_duration - lastTime);
@@ -146,11 +140,11 @@ public class ParticleSimulator extends JPanel {
 			}
 
 			// Since the event is valid, then pause the simulation for the right amount of time, and then update the screen.
-			if (show) {
-				try {
-					Thread.sleep((long) (delta * 1000));
-				} catch (InterruptedException ie) {}
-			}
+			// if (show) {
+			// 	try {
+			// 		Thread.sleep((long) (delta * 1000));
+			// 	} catch (InterruptedException ie) {}
+			// }
 
 			// Update positions of all particles
 			updateAllParticles(delta);
@@ -167,9 +161,7 @@ public class ParticleSimulator extends JPanel {
 				createEventsForParticle(p, event._timeOfEvent); // Create new collision events for this particle
 			}
 			else if (event._particle2 != null) {
-				// Particle-particle collision
-				event._particle1.updateAfterCollision(event._timeOfEvent, event._particle2);
-				
+				event._particle1.updateAfterCollision(event._timeOfEvent, event._particle2); // Particle-particle collision
 				// Create new events for BOTH particles that just collided
 				createEventsForParticle(event._particle1, event._timeOfEvent);
 				createEventsForParticle(event._particle2, event._timeOfEvent);
