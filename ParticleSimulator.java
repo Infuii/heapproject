@@ -140,11 +140,11 @@ public class ParticleSimulator extends JPanel {
 			}
 
 			// Since the event is valid, then pause the simulation for the right amount of time, and then update the screen.
-			// if (show) {
-			// 	try {
-			// 		Thread.sleep((long) (delta * 1000));
-			// 	} catch (InterruptedException ie) {}
-			// }
+			if (show) {
+				try {
+					Thread.sleep((long) (delta * 1000));
+				} catch (InterruptedException ie) {}
+			}
 
 			// Update positions of all particles
 			updateAllParticles(delta);
